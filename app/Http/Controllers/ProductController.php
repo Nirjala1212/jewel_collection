@@ -4,55 +4,62 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\Category;
+use App\Models\Review;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
     public function index()
     {
-        $products = Product::with('category')->latest()->get();
-        return view('products.index', compact('products'));
+        $products = Product::with('category')
+            ->where('stock_quantity', '>', 0)
+            ->latest()
+            ->get();
+
+        return view('user.products.index', compact('products'));
     }
 
-    public function create()
+    public function show($id)
     {
-        $categories = Category::all();
-        return view('products.create', compact('categories'));
+        $product = Product::findOrFail($id);
+
+        $reviews = Review::with('user')
+            ->where('product_id', $id)
+            ->latest()
+            ->get();
+
+        return view('user.product-details', compact('product', 'reviews'));
     }
 
-    public function store(Request $request)
+    public function landing()
+    {
+        $products = Product::latest()->get();
+        $categories = Category::latest()->get();
+
+        return view('user.dashboard', compact('products', 'categories'));
+    }
+
+    public function stock()
+    {
+        $products = Product::with('category')
+            ->latest()
+            ->get();
+
+        return view('admin.stock', compact('products'));
+    }
+
+    public function updateStock(Request $request, Product $product)
     {
         $request->validate([
-            'category_id' => 'required|exists:categories,id',
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'material' => 'nullable|string|max:100',
-            'weight' => 'nullable|numeric',
-            'price' => 'required|numeric',
-            'discount' => 'nullable|numeric',
-            'stock_quantity' => 'required|integer',
-            'image' => 'nullable|string|max:255',
+            'stock_quantity' => 'required|integer|min:0',
+            'low_stock_threshold' => 'required|integer|min:0',
         ]);
 
-        Product::create([
-            'category_id' => $request->category_id,
-            'name' => $request->name,
-            'description' => $request->description,
-            'material' => $request->material,
-            'weight' => $request->weight,
-            'price' => $request->price,
-            'discount' => $request->discount ?? 0,
+        $product->update([
             'stock_quantity' => $request->stock_quantity,
-            'image' => $request->image,
+            'low_stock_threshold' => $request->low_stock_threshold,
         ]);
 
-        return redirect()->route('products.index')->with('success', 'Product added successfully.');
+        return redirect()->route('admin.stock')->with('success', 'Stock updated successfully.');
     }
-public function show($id)
-{
-    $product = Product::with('category')->findOrFail($id);
-
-    $reviews = collect(); // temporary until review table/model is ready
-
-    return view('user.product-details', compact('product', 'reviews'));
-}}
+}

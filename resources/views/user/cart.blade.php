@@ -17,24 +17,24 @@
         </div>
     @endif
 
-    @if(count($cart) > 0)
+    @if($cartItems->count() > 0)
 
         <div class="bg-white rounded-xl shadow overflow-hidden">
 
             @php $total = 0; @endphp
 
-            @foreach($cart as $item)
+            @foreach($cartItems as $item)
 
                 @php
-                    $subtotal = $item['price'] * $item['quantity'];
+                    $subtotal = $item->product->price * $item->quantity;
                     $total += $subtotal;
                 @endphp
 
                 <div class="flex items-center justify-between border-b p-5">
 
                     <div class="flex items-center gap-5">
-                        @if(!empty($item['image']))
-                            <img src="{{ asset('storage/' . $item['image']) }}"
+                        @if($item->product && $item->product->image)
+                            <img src="{{ asset('storage/' . $item->product->image) }}"
                                  class="w-24 h-24 object-cover rounded">
                         @else
                             <div class="w-24 h-24 bg-gray-200 rounded flex items-center justify-center text-gray-500">
@@ -43,9 +43,17 @@
                         @endif
 
                         <div>
-                            <h2 class="text-xl font-bold">{{ $item['name'] }}</h2>
-                            <p class="text-gray-500">Rs. {{ number_format($item['price']) }}</p>
-                            <p class="text-gray-500">Quantity: {{ $item['quantity'] }}</p>
+                            <h2 class="text-xl font-bold">
+                                {{ $item->product->name ?? 'Product Deleted' }}
+                            </h2>
+
+                            <p class="text-gray-500">
+                                Rs. {{ number_format($item->product->price ?? 0) }}
+                            </p>
+
+                            <p class="text-gray-500">
+                                Quantity: {{ $item->quantity }}
+                            </p>
                         </div>
                     </div>
 
@@ -54,7 +62,7 @@
                             Rs. {{ number_format($subtotal) }}
                         </p>
 
-                        <form action="{{ route('cart.remove', $item['id']) }}" method="POST" class="mt-3">
+                        <form action="{{ route('cart.remove', $item->id) }}" method="POST" class="mt-3">
                             @csrf
                             @method('DELETE')
 
@@ -79,8 +87,8 @@
                     Continue Shopping
                 </a>
 
-                <a href="#"
-                   class="bg-black text-white px-8 py-3 rounded-full">
+                <a href="{{ route('checkout.create') }}"
+                   class="bg-black hover:bg-yellow-500 hover:text-black text-white px-8 py-3 rounded-full font-semibold transition">
                     Proceed to Checkout
                 </a>
             </div>

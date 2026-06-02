@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Review;
 
 class Product extends Model
 {
@@ -24,8 +25,14 @@ class Product extends Model
     {
         return $this->belongsTo(Category::class);
     }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
+
     public function getFinalPriceAttribute()
-{
-    return $this->price - ($this->discount ?? 0);
-}
+    {
+        return $this->price - ($this->discount ?? 0);
+    }
 }

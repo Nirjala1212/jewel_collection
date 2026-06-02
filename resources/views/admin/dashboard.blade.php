@@ -173,7 +173,9 @@
         <a href="{{ route('admin.stock') }}">Stock Management</a>
         <a href="#">Manage Orders</a>
         <a href="#">Payments</a>
-        <a href="#">Reviews</a>
+        <a href="{{ route('admin.reviews') }}">
+    Reviews
+</a>
         <a href="#">Customers</a>
     </aside>
 
@@ -184,7 +186,7 @@
                 <h1>Admin Dashboard</h1>
                 <p>Welcome, {{ Auth::user()->full_name }}</p>
             </div>
-
+   
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button class="logout-btn" type="submit">Logout</button>

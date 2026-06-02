@@ -102,4 +102,20 @@ class ProductController extends Controller
     $products = Product::with('category')->get();
     return view('admin.stock.index', compact('products'));
 }
+   public function updateStock(Request $request, $product)
+{
+    $request->validate([
+        'stock_quantity' => 'required|integer|min:0',
+        'low_stock_threshold' => 'required|integer|min:0',
+    ]);
+
+    $product = Product::findOrFail($product);
+
+    $product->update([
+        'stock_quantity' => $request->stock_quantity,
+        'low_stock_threshold' => $request->low_stock_threshold,
+    ]);
+
+    return redirect()->back()->with('success', 'Stock updated successfully.');
+}
 }

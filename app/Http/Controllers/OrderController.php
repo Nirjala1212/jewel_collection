@@ -16,10 +16,9 @@ class OrderController extends Controller
         $this->orderService = $orderService;
     }
 
-    // Show checkout page
     public function create()
     {
-        $userId = 1; // temporary
+        $userId = auth()->id();
 
         $cartItems = Cart::with('product.category')
             ->where('user_id', $userId)
@@ -27,7 +26,7 @@ class OrderController extends Controller
 
         if ($cartItems->isEmpty()) {
             return redirect()->route('cart.index')
-                ->with('success', 'Your cart is empty.');
+                ->with('error', 'Your cart is empty.');
         }
 
         $total = 0;
@@ -39,26 +38,35 @@ class OrderController extends Controller
         return view('checkout.create', compact('cartItems', 'total'));
     }
 
-    // Place order
     public function store(Request $request)
     {
-        $userId = 1; // temporary
+        $userId = auth()->id();
 
         $request->validate([
             'delivery_address' => 'required|string',
-            'payment_method' => 'required|string',
+            'payment_method' => 'required|string|in:COD,ESEWA',
         ]);
 
-        $this->orderService->createOrder($userId, $request->all());
+        $order = $this->orderService->createOrder($userId, $request->all());
 
-        return redirect()->route('orders.index')
-            ->with('success', 'Order placed successfully.');
+        if ($request->payment_method == 'COD') {
+            return redirect()
+                ->route('orders.index')
+                ->with('success', 'Order placed successfully with Cash on Delivery.');
+        }
+
+        if ($request->payment_method == 'ESEWA') {
+            return redirect()
+                ->route('orders.index')
+                ->with('success', 'eSewa payment integration coming soon.');
+        }
+
+        return redirect()->route('orders.index');
     }
 
-    // Show all orders
     public function index()
     {
-        $userId = 1;
+        $userId = auth()->id();
 
         $orders = Order::with('items.product')
             ->where('user_id', $userId)

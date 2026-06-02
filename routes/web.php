@@ -6,12 +6,10 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
-
-// HOME
-Route::get('/', function () {
-    return redirect()->route('login');
-});
-
+use App\Http\Controllers\ReviewController;
+//home
+Route::get('/', [ProductController::class, 'landing'])->name('landing');
+Route::get('/jewel_collection', [ProductController::class, 'landing'])->name('jewel.collection');
 // AUTH
 Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
 Route::post('/register', [AuthController::class, 'register'])->name('register.post');
@@ -36,12 +34,12 @@ Route::middleware(['role:admin'])->group(function () {
     Route::resource('/admin/products', \App\Http\Controllers\Admin\ProductController::class)
         ->names('admin.products');
 
-    Route::get('/admin/stock', [\App\Http\Controllers\Admin\ProductController::class, 'stock'])
-        ->name('admin.stock');
+Route::get('/admin/stock', [ProductController::class, 'stock'])->name('admin.stock');
 
-    Route::put('/admin/stock/{product}', [\App\Http\Controllers\Admin\ProductController::class, 'updateStock'])
-        ->name('admin.stock.update');
-});
+Route::put('/admin/stock/{product}', [ProductController::class, 'updateStock'])
+    ->name('admin.stock.update');Route::get('/admin/reviews', [\App\Http\Controllers\Admin\ReviewController::class, 'index'])
+    ->name('admin.reviews');
+    });
 
 // USER ROUTES
 Route::middleware(['role:user'])->group(function () {
@@ -53,19 +51,34 @@ Route::middleware(['role:user'])->group(function () {
             ->take(6)
             ->get();
 
-        return view('user.dashboard', compact('products'));
+        $categories = \App\Models\Category::latest()->get();
+
+        return view('user.dashboard', compact('products', 'categories'));
     })->name('user.dashboard');
+
+    Route::get('/user/category/{id}/products', function ($id) {
+        $category = \App\Models\Category::findOrFail($id);
+
+        $products = \App\Models\Product::where('category_id', $id)
+            ->where('stock_quantity', '>', 0)
+            ->latest()
+            ->get();
+
+        return view('user.category-products', compact('category', 'products'));
+    })->name('category.products');
 
     Route::post('/cart/add/{product}', [CartController::class, 'store'])->name('cart.store');
 
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
 
     Route::delete('/cart/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
-
+    Route::post('/buy-now/{id}', [CartController::class, 'buyNow'])->name('buy.now');
     Route::get('/checkout', [OrderController::class, 'create'])->name('checkout.create');
     Route::post('/checkout', [OrderController::class, 'store'])->name('checkout.store');
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
-});
-// PUBLIC PRODUCT ROUTES
+
+Route::post('/product/{product}/review', [ReviewController::class, 'store'])
+    ->name('reviews.store');
+});// PUBLIC PRODUCT ROUTES
 Route::get('/product/{id}', [ProductController::class, 'show'])->name('product.show');
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');
