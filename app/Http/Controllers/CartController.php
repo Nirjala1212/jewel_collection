@@ -23,13 +23,25 @@ class CartController extends Controller
             'quantity' => 'required|integer|min:1|max:' . $product->stock_quantity,
         ]);
 
+        if ($request->has('buy_now')) {
+            Cart::where('user_id', auth()->id())->delete();
+
+            Cart::create([
+                'user_id' => auth()->id(),
+                'product_id' => $product->id,
+                'quantity' => $request->quantity,
+            ]);
+
+            return redirect()->route('checkout.create');
+        }
+
         $cartItem = Cart::where('user_id', auth()->id())
             ->where('product_id', $product->id)
             ->first();
 
         if ($cartItem) {
             $cartItem->update([
-                'quantity' => $cartItem->quantity + $request->quantity,
+                'quantity' => $request->quantity,
             ]);
         } else {
             Cart::create([
@@ -37,10 +49,6 @@ class CartController extends Controller
                 'product_id' => $product->id,
                 'quantity' => $request->quantity,
             ]);
-        }
-
-        if ($request->has('buy_now')) {
-            return redirect()->route('checkout.create');
         }
 
         return redirect()->route('cart.index')

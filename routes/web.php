@@ -7,6 +7,8 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\EsewaController;
+
 //home
 Route::get('/', [ProductController::class, 'landing'])->name('landing');
 Route::get('/jewel_collection', [ProductController::class, 'landing'])->name('jewel.collection');
@@ -39,6 +41,10 @@ Route::get('/admin/stock', [ProductController::class, 'stock'])->name('admin.sto
 Route::put('/admin/stock/{product}', [ProductController::class, 'updateStock'])
     ->name('admin.stock.update');Route::get('/admin/reviews', [\App\Http\Controllers\Admin\ReviewController::class, 'index'])
     ->name('admin.reviews');
+     Route::get('/admin/orders', [App\Http\Controllers\Admin\OrderController::class, 'index'])
+    ->name('admin.orders.index');
+    Route::patch('/admin/orders/{order}/update-status', [App\Http\Controllers\Admin\OrderController::class, 'updateStatus'])
+    ->name('admin.orders.updateStatus');
     });
 
 // USER ROUTES
@@ -82,3 +88,12 @@ Route::post('/product/{product}/review', [ReviewController::class, 'store'])
 });// PUBLIC PRODUCT ROUTES
 Route::get('/product/{id}', [ProductController::class, 'show'])->name('product.show');
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');
+// ESEWA PAYMENT ROUTES
+Route::get('/esewa/pay/{orderId}', [EsewaController::class, 'pay'])
+    ->name('esewa.pay');
+
+Route::get('/esewa/success', [EsewaController::class, 'success'])
+    ->name('esewa.success');
+
+Route::get('/esewa/failure', [EsewaController::class, 'failure'])
+    ->name('esewa.failure');

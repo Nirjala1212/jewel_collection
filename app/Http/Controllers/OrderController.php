@@ -25,14 +25,15 @@ class OrderController extends Controller
             ->get();
 
         if ($cartItems->isEmpty()) {
-            return redirect()->route('cart.index')
+            return redirect()
+                ->route('cart.index')
                 ->with('error', 'Your cart is empty.');
         }
 
         $total = 0;
 
         foreach ($cartItems as $item) {
-            $total += $item->product->final_price * $item->quantity;
+            $total += round((float) $item->product->price) * (int) $item->quantity;
         }
 
         return view('checkout.create', compact('cartItems', 'total'));
@@ -43,25 +44,34 @@ class OrderController extends Controller
         $userId = auth()->id();
 
         $request->validate([
+            'full_name' => 'required|string|max:255',
+            'phone' => 'required|string|max:20',
+            'email' => 'required|email|max:255',
+            'province' => 'required|string',
+            'city' => 'required|string',
+            'area' => 'required|string',
+            'landmark' => 'nullable|string|max:255',
             'delivery_address' => 'required|string',
             'payment_method' => 'required|string|in:COD,ESEWA',
         ]);
 
-        $order = $this->orderService->createOrder($userId, $request->all());
+        try {
+            $order = $this->orderService->createOrder($userId, $request->all());
 
-        if ($request->payment_method == 'COD') {
+            if ($request->payment_method === 'ESEWA') {
+                return redirect()->route('esewa.pay', $order->id);
+            }
+
             return redirect()
                 ->route('orders.index')
-                ->with('success', 'Order placed successfully with Cash on Delivery.');
-        }
+                ->with('success', 'Order placed successfully. Cash on Delivery selected.');
 
-        if ($request->payment_method == 'ESEWA') {
+        } catch (\Exception $e) {
             return redirect()
-                ->route('orders.index')
-                ->with('success', 'eSewa payment integration coming soon.');
+                ->route('checkout.create')
+                ->with('error', $e->getMessage())
+                ->withInput();
         }
-
-        return redirect()->route('orders.index');
     }
 
     public function index()
@@ -74,5 +84,30 @@ class OrderController extends Controller
             ->get();
 
         return view('orders.index', compact('orders'));
+    }
+
+    public function adminOrders()
+    {
+        $orders = Order::with('items.product', 'user')
+            ->latest()
+            ->get();
+
+        return view('admin.orders.index', compact('orders'));
+    }
+
+    public function updateStatus(Request $request, Order $order)
+    {
+        $request->validate([
+            'payment_status' => 'required|in:pending,paid,failed',
+            'order_status' => 'required|in:pending,confirmed,processing,completed,cancelled',
+        ]);
+
+        $order->update([
+            'payment_status' => $request->payment_status,
+            'order_status' => $request->order_status,
+            'status' => $request->order_status,
+        ]);
+
+        return back()->with('success', 'Order updated successfully.');
     }
 }

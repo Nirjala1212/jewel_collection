@@ -89,35 +89,26 @@
 
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
 
-    @foreach($products as $product)
-    
+@foreach($products as $product)
 
-    <div onclick="window.location='{{ route('product.show', $product->id) }}'"
-         class="bg-white rounded-2xl shadow border overflow-hidden hover:shadow-xl transition duration-300 cursor-pointer">
+    <div class="bg-white rounded-[24px] shadow-xl overflow-hidden hover:shadow-2xl transition">
 
-<div class="relative h-56 bg-gray-100 flex items-center justify-center overflow-hidden">
+        <div class="relative h-64 bg-gray-100 overflow-hidden">
             @if($product->image)
-
                 <img src="{{ asset('storage/' . $product->image) }}"
                      alt="{{ $product->name }}"
                      class="w-full h-full object-cover">
-
             @else
-
-                <div class="text-gray-400 text-lg">
+                <div class="w-full h-full flex items-center justify-center text-gray-400">
                     No Image
                 </div>
-
             @endif
 
             @if(($product->stock_quantity ?? 10) <= 5)
-
                 <span class="absolute top-4 left-4 bg-red-600 text-white text-xs px-4 py-2 rounded-full font-bold">
                     LOW STOCK
                 </span>
-
             @endif
-
         </div>
 
         <div class="p-6">
@@ -126,44 +117,29 @@
                 {{ $product->category->name ?? 'Jewellery' }}
             </p>
 
-            <h3 class="font-bold text-2xl mt-2 text-black">
+            <h3 class="font-bold text-2xl mt-3 text-black">
                 {{ $product->name }}
             </h3>
 
-            <p class="text-gray-500 mt-2">
+            <p class="text-gray-500 mt-2 text-lg">
                 {{ $product->material ?? '' }}
             </p>
 
-<div class="min-h-[90px] mt-4">
-    <p class="text-gray-600">
-        {{ Str::limit($product->description, 70) }}
-    </p>
-</div>
-            <div class="flex justify-between items-center mt-6">
-<div class="mt-6">
+            <h4 class="text-2xl font-bold text-black mt-6">
+                Rs. {{ number_format($product->price) }}
+            </h4>
 
-    <h4 class="text-2xl font-bold text-black mb-4">
-        Rs. {{ number_format($product->price) }}
-    </h4>
+            <div class="flex gap-4 mt-6">
 
-<div class="grid grid-cols-2 gap-3" onclick="event.stopPropagation();">
+                <a href="{{ route('product.show', $product->id) }}"
+                   class="bg-black text-white px-7 py-3 rounded-full font-bold text-base hover:bg-gray-800 transition">
+                    Buy Now
+                </a>
 
-@auth
-
-  <div class="grid grid-cols-2 gap-3 mt-6" onclick="event.stopPropagation();">
-    <a href="{{ route('product.show', $product->id) }}"
-class="flex-1 text-center border border-black text-black py-2 rounded-full font-bold hover:bg-black hover:text-white transition duration-300 shadow-md hover:shadow-xl">
-        Add To Cart
-    </a>
-    <a href="{{ route('product.show', $product->id) }}"
-  class="flex-1 text-center bg-black text-white py-3 rounded-full font-semibold hover:bg-yellow-500 hover:text-black transition duration-300 shadow-md hover:shadow-xl">
-        Buy Now    </a>
-
-</div>
-
-@endauth
-</div>
-</div> 
+                <a href="{{ route('product.show', $product->id) }}"
+                   class="border border-black text-black px-7 py-3 rounded-full font-bold text-base hover:bg-black hover:text-white transition">
+                    Add Cart
+                </a>
 
             </div>
 
@@ -171,10 +147,9 @@ class="flex-1 text-center border border-black text-black py-2 rounded-full font-
 
     </div>
 
-    @endforeach
+@endforeach
 
-</div>
-    <div class="text-center mt-12">
+</div>    <div class="text-center mt-12">
         <a href="{{ route('products.index') }}"
            class="inline-block border border-black px-8 py-3 rounded-full font-bold hover:bg-black hover:text-white transition">
             View Entire Collection →

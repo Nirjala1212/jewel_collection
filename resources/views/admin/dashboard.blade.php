@@ -171,8 +171,10 @@
         <a href="{{ route('admin.categories.index') }}">Manage Categories</a>
         <a href="{{ route('admin.products.index') }}">Manage Products</a>       
         <a href="{{ route('admin.stock') }}">Stock Management</a>
-        <a href="#">Manage Orders</a>
-        <a href="#">Payments</a>
+<a href="{{ route('admin.orders.index') }}"
+   class="block px-4 py-3 rounded-lg hover:bg-slate-700">
+    Manage Orders
+</a>        <a href="#">Payments</a>
         <a href="{{ route('admin.reviews') }}">
     Reviews
 </a>
